@@ -35,32 +35,32 @@ public class mainController {
 		
 		if(place.equals("farm")) {
 			Integer randGold = getRandomGold(20,10);
-			System.out.println("Farm's random gold : "+randGold);
+//			System.out.println("Farm's random gold : "+randGold);
 			Integer myGold = (Integer) session.getAttribute("gold");
 			session.setAttribute("gold", myGold+randGold);
-			System.out.println(session.getAttribute("gold"));
+//			System.out.println(session.getAttribute("gold"));
 			((ArrayList<String>) session.getAttribute("activities")).add("You entered a farm and earned "+randGold+" gold. ("+timeStamp+")");
 
 		}else if (place.equals("cave")) {
 			Integer randGold = getRandomGold(10,5);
-			System.out.println("Cave's random gold : "+randGold);
+//			System.out.println("Cave's random gold : "+randGold);
 			Integer myGold = (Integer) session.getAttribute("gold");
 			session.setAttribute("gold", myGold+randGold);
-			System.out.println(session.getAttribute("gold"));
+//			System.out.println(session.getAttribute("gold"));
 			((ArrayList<String>) session.getAttribute("activities")).add("You entered a cave and earned "+randGold+" gold. ("+timeStamp+")");
 		}else if (place.equals("house")) {
 			Integer randGold = getRandomGold(5,2);
-			System.out.println("House's random gold : "+randGold);
+//			System.out.println("House's random gold : "+randGold);
 			Integer myGold = (Integer) session.getAttribute("gold");
 			session.setAttribute("gold", myGold+randGold);
-			System.out.println(session.getAttribute("gold"));
+//			System.out.println(session.getAttribute("gold"));
 			((ArrayList<String>) session.getAttribute("activities")).add("You entered a house and earned "+randGold+" gold. ("+timeStamp+")");
 		}else if(place.equals("casino")) {
 			Integer randGold = getRandomGold(50,-50);
-			System.out.println("casino's random gold : "+randGold);
+//			System.out.println("casino's random gold : "+randGold);
 			Integer myGold = (Integer) session.getAttribute("gold");
 			session.setAttribute("gold", myGold+randGold);
-			System.out.println(session.getAttribute("gold"));
+//			System.out.println(session.getAttribute("gold"));
 			if(randGold<0) {
 				((ArrayList<String>) session.getAttribute("activities")).add("You entered a Casino and lost "+randGold+" gold. Ouch .. ("+timeStamp+")");
 			}else {
