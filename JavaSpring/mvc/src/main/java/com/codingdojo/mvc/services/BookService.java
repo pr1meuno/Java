@@ -43,8 +43,8 @@ public class BookService {
     
     //update a book
 	public Book updateBook(Long id, String title, String desc, String lang, Integer numOfPages) {
-		
-		Book book = new Book();
+			
+		Book book = findBook(id);
 		if(book.getId()== id) {
 			book.setTitle(title);
 			book.setDescription(desc);

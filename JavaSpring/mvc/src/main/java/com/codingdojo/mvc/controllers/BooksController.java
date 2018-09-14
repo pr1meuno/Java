@@ -50,5 +50,6 @@ public class BooksController {
     	model.addAttribute("book", book);
     	return "/books/showBook.jsp";
     }
+    
 }
 

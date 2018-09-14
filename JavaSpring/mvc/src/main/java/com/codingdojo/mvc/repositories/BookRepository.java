@@ -11,5 +11,4 @@ public interface BookRepository extends CrudRepository<Book, Long> {
 
 	List<Book> findAll();
 	List<Book> findByDescriptionContaining(String search);
-	//void deleteById(Long id);
 }
