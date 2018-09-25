@@ -30,7 +30,7 @@ public class Task {
 	@Min(1)
 	@Max(3)
 	@NotNull(message="Task priority cannot be empty")
-	private Long priority;
+	private Integer priority;
 	@Column(updatable=false)
     private Date createdAt;
     private Date updatedAt;
@@ -75,11 +75,11 @@ public class Task {
 		this.taskName = taskName;
 	}
 
-	public Long getPriority() {
+	public Integer getPriority() {
 		return priority;
 	}
 
-	public void setPriority(Long priority) {
+	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
 

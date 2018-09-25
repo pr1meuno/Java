@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.codingdojo.beltexam.models.Task;
 import com.codingdojo.beltexam.models.User;
@@ -51,14 +52,14 @@ public class MainController {
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String loginUser(@RequestParam("email") String email, @RequestParam("password") String password, Model model,
-			HttpSession session) {
+			HttpSession session, @ModelAttribute("user") User user) {
 		boolean isAuthenticated = userService.authenticateUser(email, password);
 		if (isAuthenticated) {
 			User u = userService.findByEmail(email);
 			session.setAttribute("userId", u.getId());
 			return "redirect:/tasks";
 		} else {
-			model.addAttribute("user", new User());
+//			model.addAttribute("user", new User());
 			model.addAttribute("error", "Invalid Credentials. Please try again.");
 			return "index.jsp";
 		}
@@ -97,13 +98,13 @@ public class MainController {
 	public String displayTaskCreation(@ModelAttribute("task") Task myTask, Model model, HttpSession session) {
 		// if current user is in session then proceed, if not redirect to login page
 		if (session.getAttribute("userId") != null) {
-			//find a list of all users, it will be used in Dropdown menu 
+			// find a list of all users, it will be used in Dropdown menu
 			List<User> allusers = userService.findAll();
 			model.addAttribute("users", allusers);
-			
-			//get current user login info
-			
-			//when get user id from session, don't forget to cast data type to Long
+
+			// get current user login info
+
+			// when get user id from session, don't forget to cast data type to Long
 			Long userId = (Long) session.getAttribute("userId");
 			User u = userService.findUserById(userId);
 			model.addAttribute("currentUser", u);
@@ -117,91 +118,116 @@ public class MainController {
 	// create new task
 	@RequestMapping(value = "/tasks/new", method = RequestMethod.POST)
 	public String createNewTask(@Valid @ModelAttribute("task") Task myTask, BindingResult result, HttpSession session,
-			Model model) {
+			Model model, RedirectAttributes limitError) {
 		Long userId = (Long) session.getAttribute("userId");
 		User u = userService.findUserById(userId);
 		model.addAttribute("user", u);
-		System.out.println("----- " + u.getId());
 
 		if (result.hasErrors()) {
 			System.out.println("I got an error");
+
+			// passing list of users back to dropdown menu when errors validation is
+			// activated.
+			List<User> allusers = userService.findAll();
+			model.addAttribute("users", allusers);
 			return "task.jsp";
 		} else {
-			System.out.println("No error when created task");
-			Task newTask = taskService.createTask(myTask);
-			System.out.println("*** Current Login User *** : " + u.getName());
+			
+			// user cannot be assigned more than 3 tasks
+			//--------------  Black Belt requirement ---------------
+			// get assignee id
+			Long aId = (Long) myTask.getAssignee().getId();
+			User myAssignee = userService.findUserById(aId);
+			// list how many tasks that this user have been assigned to so far
+			// if number of tasks is equal or greater than 3, then STOP there
+			List<Task> myList = myAssignee.getAssigned_tasks();
+			
+			if (myList.size() >= 3) {
+				System.out.print("At limit");
+				List<User> allusers = userService.findAll();
+				model.addAttribute("users", allusers);
+				limitError.addFlashAttribute("errors", "User cannot be assigned more than 3 tasks");
+				return "redirect:/tasks/new";
+				
+			// --------------- Black Belt --------------------------	
+				
+			} else {
 
-			// add creator(current login user) to a created task
-			newTask.setCreator(u);
-			// save() change by calling updateTask()
-			taskService.updateTask(newTask);
+				System.out.println("No error when created task");
+				Task newTask = taskService.createTask(myTask);
+				System.out.println("*** Current Login User *** : " + u.getName());
 
-			System.out.println(
-					"**** Task creator ID **** : " + newTask.getCreator().getId() + "   " + newTask.getTaskName());
-			return "redirect:/tasks";
+				// add creator(current login user) to a created task
+				newTask.setCreator(u);
+				// save() change by calling updateTask()
+				taskService.updateTask(newTask);
+
+				return "redirect:/tasks";
+			}
 		}
 	}
 
-	// display an individual task  "showtask.jsp"
+	// display an individual task "showtask.jsp"
 	@RequestMapping("/tasks/{id}")
 	public String displayTask(Model model, HttpSession session, @PathVariable("id") Long taskId) {
-		//find a task by id
+		// find a task by id
 		Task thisTask = taskService.findTask(taskId);
 		model.addAttribute("task", thisTask);
-		
-		//find a current login user id
-		Long userId =(Long) session.getAttribute("userId");
+
+		// find a current login user id
+		Long userId = (Long) session.getAttribute("userId");
 		User u = userService.findUserById(userId);
-		model.addAttribute("currentUserId",u.getId());
+		model.addAttribute("currentUserId", u.getId());
 		return "showtask.jsp";
 	}
 
-	// show a task edit page - only creator can see  (black belt requirement)
+	// show a task edit page - only creator can see (black belt requirement)
 	@RequestMapping("/tasks/{id}/edit")
-	public String displayEditPage(Model model, @ModelAttribute("edittask") Task myTask,
-			@PathVariable("id") Long taskId, HttpSession session) {
-		
-		//---------------------------------------------------------------------------
-		//Black belt requirement
-		//To prevent user access edit page directly via typing URL /tasks/{id}/edit
-		//Current user must be a creator only in order to access this page
+	public String displayEditPage(Model model, @ModelAttribute("edittask") Task myTask, @PathVariable("id") Long taskId,
+			HttpSession session) {
+
+		// ---------------------------------------------------------------------------
+		// Black belt requirement
+		// To prevent user access edit page directly via typing URL /tasks/{id}/edit
+		// Current user must be a creator only in order to access this page
 		// --------------------------------------------------------------------------
-		
-		//get current login user id from session
-		Long userId =(Long) session.getAttribute("userId");
+
+		// get current login user id from session
+		Long userId = (Long) session.getAttribute("userId");
 		User u = userService.findUserById(userId);
-		
+
 		// get a task by id
 		Task editingTask = taskService.findTask(taskId);
-		
-		System.out.println("---- Task Name ----- :"+editingTask.getTaskName());
-		
-		if(u.getId() == editingTask.getCreator().getId()) {
-		
+
+		System.out.println("---- Task Name ----- :" + editingTask.getTaskName());
+
+		if (u.getId() == editingTask.getCreator().getId()) {
+
 			// List all users
 			List<User> allUsers = userService.findAll();
 
 			// Getting a task's creator, model pass info back to JSP
 			model.addAttribute("creator", editingTask.getCreator());
-			model.addAttribute("edittask",editingTask);
+			model.addAttribute("edittask", editingTask);
 			model.addAttribute("users", allUsers);
 			model.addAttribute("id", editingTask.getId());
 			return "edittask.jsp";
-		}else {
+		} else {
 			System.out.println("You are not a creator of this task ... get loss !");
 			return "redirect:/tasks";
 		}
-		
+
 	}
 
 	// update task
-	@RequestMapping(value = "/tasks/{id}/edit", method = RequestMethod.PUT)
+	@RequestMapping(value = "/tasks/{id}/edit", method = RequestMethod.POST)
 	public String updateTask(Model model, @Valid @ModelAttribute("edittask") Task myTask, BindingResult result,
 			@PathVariable("id") Long taskId) {
 		System.out.println("Im in update routing");
 
 		if (result.hasErrors()) {
-
+			List<User> allusers = userService.findAll();
+			model.addAttribute("users", allusers);
 			return "edittask.jsp";
 		} else {
 			taskService.createTask(myTask);
@@ -212,40 +238,51 @@ public class MainController {
 	// delete task
 	@RequestMapping("/tasks/{id}/delete")
 	public String deleteTask(@PathVariable("id") Long myId) {
-		taskService.deleteTask(myId);
-		return "redirect:/tasks";
-	}
-	// list tasks from low to high priority
-	@RequestMapping("/tasks/low-high")
-	public String lowHigh(HttpSession session, Model model) {
-				
-					// get user from session, save them in the model and return the home page
-					Long userId = (Long) session.getAttribute("userId");
-					User u = userService.findUserById(userId);
-					// model pass u user to jsp in order to display current user login name
-					model.addAttribute("user", u);
-					// get all tasks and list them on homepage
-					List<Task> tasklist = taskService.lowToHigh();
-					model.addAttribute("tasks", tasklist);
-					return "homePage.jsp";
+		Task deltask = taskService.findTask(myId);
+		if (deltask != null) {
+			taskService.deleteTask(myId);
+			return "redirect:/tasks";
+		} else {
+			return "redirect:/tasks";
+		}
 	}
 
-	
+	// -------------------------------------------------------
+	// Black belt requirements
+	// -------------------------------------------------------
+
+	// list tasks from low to high priority
+	@RequestMapping("/lowhigh")
+	public String lowHigh(HttpSession session, Model model) {
+
+		// get user from session, save them in the model and return the home page
+		Long userId = (Long) session.getAttribute("userId");
+		User u = userService.findUserById(userId);
+
+		// model pass u user to jsp in order to display current user login name
+		model.addAttribute("user", u);
+
+		// get all tasks and list them on homepage
+		List<Task> tasklist = taskService.lowToHigh();
+		model.addAttribute("tasks", tasklist);
+		return "homePage.jsp";
+	}
+
 	// list tasks from high to low priority
-	@RequestMapping("/tasks/high-low")
+	@RequestMapping("/highlow")
 	public String HighLow(HttpSession session, Model model) {
 
-					// get user from session, save them in the model and return the home page
-					Long userId = (Long) session.getAttribute("userId");
-					User u = userService.findUserById(userId);
-					
-					// model pass u user to jsp in order to display current user login name
-					model.addAttribute("user", u);
-					
-					// get all tasks and list them on homepage
-					List<Task> tasklist = taskService.highToLow();
-					model.addAttribute("tasks", tasklist);
-					return "homePage.jsp";
+		// get user from session, save them in the model and return the home page
+		Long userId = (Long) session.getAttribute("userId");
+		User u = userService.findUserById(userId);
+
+		// model pass u user to jsp in order to display current user login name
+		model.addAttribute("user", u);
+
+		// get all tasks and list them on homepage
+		List<Task> tasklist = taskService.highToLow();
+		model.addAttribute("tasks", tasklist);
+		return "homePage.jsp";
 	}
-	
+
 }

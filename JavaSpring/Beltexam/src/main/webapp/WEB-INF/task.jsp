@@ -28,8 +28,9 @@
 							<tr>
 								<td><form:label path="taskName">Task:</form:label></td>
 								<td><form:input path="taskName" class="input" /></td>
-								<td><form:errors path="taskName" /></td>
+								<%-- <td><form:errors path="taskName" /></td> --%>
 							</tr>
+								
 							<tr>
 								<td><form:label path="assignee">Assignee:</form:label></td>
 								<td><form:select path="assignee"
@@ -44,7 +45,7 @@
 											</c:if>
 										</c:forEach>
 									</form:select></td>
-								<td><form:errors path="assignee" /></td>
+								<%-- <td><form:errors path="assignee" /></td> --%>
 							</tr>
 							<tr>
 								<td><form:label path="priority">Priority:</form:label></td>
@@ -55,14 +56,17 @@
 										<form:option value="2">Medium</form:option>
 										<form:option value="3">High</form:option>
 									</form:select></td>
-								<td><form:errors path="priority" /></td>
+								<%-- <td><form:errors path="priority" /></td> --%>
 							</tr>
 						</table>
-						<div class="buttons has-addons is-right">
+						<div class="buttons has-addons is-centered">
 							<input type="submit" value="Create" class="button" />
 						</div>
 					</form:form>
-
+					<p>
+						<form:errors path="task.*"></form:errors>
+					</p>
+					<p><c:out value="${errors}"/></p>
 
 				</div>
 				<div class="column"></div>

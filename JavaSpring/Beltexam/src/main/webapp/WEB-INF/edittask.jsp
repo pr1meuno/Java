@@ -27,7 +27,8 @@
 
 					<form:form method="POST" action="/tasks/${id}/edit"
 						modelAttribute="edittask">
-						<input type="hidden" name="_method" value="put" />
+						<!-- <input type="hidden" name="_method" value="put" /> -->
+						<form:input type="hidden" path="id"></form:input> 
 						<table class="mytable">
 							<tr>
 								<td><form:label path="taskName">Task:</form:label></td>
@@ -49,7 +50,7 @@
 											<c:if test="${user.name != edittask.assignee.getName()}"> 
 												
 												<!-- check if user name isn't a task creator name -->
-												<c:if test="${user.name!=creator.getName()}">
+												<c:if test="${user.name!=creator.name}">
 													
 													<form:option value="${user}">
 														<c:out value="${user.name}" />
@@ -70,7 +71,7 @@
 								<td><form:errors path="priority" /></td>
 						</table>
 						<!-- creator need to be specify when update a task -->
-						<form:input type="hidden" path="creator" value="${creator.getId()}"/>
+						<form:input type="hidden" path="creator" value="${creator.id}"/>
 						<div class="buttons has-addons is-right">
 							<input type="submit" value="Edit" class="button" />
 						</div>

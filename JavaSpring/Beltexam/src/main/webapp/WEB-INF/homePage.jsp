@@ -23,8 +23,8 @@
 				<c:out value="${user.name}" />
 			</p>
 			<p class="mini_nav">
-				<a class="link" href="/tasks/high-low">Priority High-Low</a> <a class="link"
-					href="/tasks/low-high">Priority Low-High</a> <a class="logout" href="/logout">Logout</a>
+				<a class="link" href="/highlow">Priority High-Low</a> <a class="link"
+					href="/lowhigh">Priority Low-High</a> <a class="logout" href="/logout">Logout</a>
 			</p>
 		</div>
 
