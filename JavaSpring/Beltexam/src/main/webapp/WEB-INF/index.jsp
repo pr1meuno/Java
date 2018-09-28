@@ -76,6 +76,7 @@
 					<div class="gap"></div>
 					<h3 class="title">Login</h3>
 					<p>
+						hello
 						<c:out value="${error}" />
 					</p>
 

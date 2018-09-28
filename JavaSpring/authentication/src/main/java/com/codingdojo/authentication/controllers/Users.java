@@ -13,13 +13,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.codingdojo.authentication.models.User;
 import com.codingdojo.authentication.services.UserService;
+import com.codingdojo.authentication.validator.UserValidator;
 
 @Controller
 public class Users {
     private final UserService userService;
-    
-    public Users(UserService userService) {
+    private final UserValidator userValidator;
+    public Users(UserService userService, UserValidator userValidator) {
         this.userService = userService;
+        this.userValidator = userValidator;
     }
     
     @RequestMapping("/registration")
@@ -33,8 +35,7 @@ public class Users {
     
     @RequestMapping(value="/registration", method=RequestMethod.POST)
     public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult result, HttpSession session) {
-        // if result has errors, return the registration page (don't worry about validations just now)
-        // else, save the user in the database, save the user id in session, and redirect them to the /home route
+    	userValidator.validate(user, result);
     	if(result.hasErrors()) {
     		return "registrationPage.jsp";
     	}
@@ -45,8 +46,6 @@ public class Users {
     
     @RequestMapping(value="/login", method=RequestMethod.POST)
     public String loginUser(@RequestParam("email") String email, @RequestParam("password") String password, Model model, HttpSession session) {
-        // if the user is authenticated, save their user id in session
-        // else, add error messages and return the login page
     	boolean isAuthenticated = userService.authenticateUser(email, password);
     	if(isAuthenticated) {
     		User u = userService.findByEmail(email);

@@ -101,11 +101,12 @@ public class MainController {
 		Question myQuestion = questionService.findQ(id);
 		model.addAttribute("myquestion", myQuestion);
 		model.addAttribute("myTags", myQuestion.getTags());
-//		List<Answer> myAns = answerService.getAll();
 		model.addAttribute("answers", myQuestion.getAnswers());
 		return "showQuestion.jsp";
 	}
-	@RequestMapping(value="/questions", method=RequestMethod.POST)
+	
+
+	@RequestMapping(value="/questions/", method=RequestMethod.POST)
 	public String addAnswer(@Valid @ModelAttribute("ans")Answer ans, BindingResult result){
 		System.out.println(ans.getId());
 		answerService.createAns(ans);
